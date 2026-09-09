@@ -3,12 +3,13 @@ package com.theatre.identityservice.model;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
+@SuperBuilder
 public class LoginResponse extends CommonResponse{
 
     private String accessToken;

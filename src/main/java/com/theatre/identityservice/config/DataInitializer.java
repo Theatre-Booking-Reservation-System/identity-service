@@ -34,6 +34,7 @@ public class DataInitializer implements ApplicationRunner {
                 .email("isuruwijegunasinghe@gmail.com")
                 .passwordHash(passwordEncoder.encode("Isuru@1234"))
                 .isVerified(true)
+                .status(1)
                 .build());
 
         log.info("Seeded PATRON: isuruwijegunasinghe@gmail.com");
@@ -46,8 +47,9 @@ public class DataInitializer implements ApplicationRunner {
                 .name("Theatre Admin")
                 .email("admin@sapumaltheatre.com")
                 .passwordHash(passwordEncoder.encode("Admin@1234"))
+                .status(1)
                 .build());
 
-        log.info("Seeded ADMIN_USER: admin@sapumaltheatre.com (ADMIN)");
+        log.info("Seeded ADMIN_USER: admin@sapumaltheatre.com");
     }
 }
