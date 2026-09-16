@@ -3,6 +3,10 @@ package com.theatre.identityservice.controller;
 import com.theatre.identityservice.model.PatronRegisterRequest;
 import com.theatre.identityservice.model.PatronRegisterResponse;
 import com.theatre.identityservice.service.PatronService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,10 +16,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/patron")
 @RequiredArgsConstructor
+@Tag(name = "Patrons", description = "Self-service patron account registration")
 public class PatronController {
 
     private final PatronService patronService;
 
+    @Operation(
+            summary = "Register a new patron account",
+            description = "Creates a new patron with the supplied name, email and password. "
+                    + "This is a public endpoint and does not require authentication.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Patron account created"),
+            @ApiResponse(responseCode = "400", description = "Request body failed validation"),
+            @ApiResponse(responseCode = "409", description = "A patron with the given email already exists")
+    })
     @PostMapping("/register")
     public ResponseEntity<PatronRegisterResponse> register(@Valid @RequestBody PatronRegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(patronService.register(request));

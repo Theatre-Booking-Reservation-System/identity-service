@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/patron/register").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // OpenAPI / Swagger UI
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
