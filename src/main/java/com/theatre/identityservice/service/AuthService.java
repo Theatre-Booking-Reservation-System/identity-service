@@ -77,7 +77,7 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(prefixedUsername);
         String role = UserRole.PATRON.name();
-        String token = tokenService.generateToken(userDetails, role);
+        String token = tokenService.generateToken(userDetails, role, patron.getEmail());
 
         return LoginResponse.builder()
                 .accessToken(token)
@@ -108,7 +108,7 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(prefixedUsername);
         String role = UserRole.ADMIN.name();
-        String token = tokenService.generateToken(userDetails, role);
+        String token = tokenService.generateToken(userDetails, role, admin.getEmail());
 
         return LoginResponse.builder()
                 .accessToken(token)
