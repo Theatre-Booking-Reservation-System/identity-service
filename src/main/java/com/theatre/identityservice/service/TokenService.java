@@ -21,9 +21,10 @@ public class TokenService {
 
     private final JwtConfig jwtConfig;
 
-    public String generateToken(UserDetails userDetails, String role) {
+    public String generateToken(UserDetails userDetails, String role, String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
+        claims.put("email", email);
         return buildToken(claims, userDetails.getUsername());
     }
 
@@ -52,6 +53,10 @@ public class TokenService {
 
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public String extractEmail(String token) {
+        return extractClaim(token, claims -> claims.get("email", String.class));
     }
 
     private Date extractExpiration(String token) {
