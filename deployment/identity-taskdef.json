@@ -1,0 +1,26 @@
+{
+  "family": "identity-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::470176527501:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::470176527501:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "identity-service",
+      "image": "470176527501.dkr.ecr.us-east-1.amazonaws.com/identity-service:latest",
+      "essential": true,
+      "portMappings": [ { "containerPort": 8081, "protocol": "tcp" } ],
+      "environment": [ { "name": "JWT_SECRET", "value": "replace-with-your-secret" } ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/identity-service",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
