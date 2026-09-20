@@ -12,7 +12,12 @@
       "image": "470176527501.dkr.ecr.us-east-1.amazonaws.com/identity-service:latest",
       "essential": true,
       "portMappings": [ { "containerPort": 8081, "protocol": "tcp" } ],
-      "environment": [ { "name": "JWT_SECRET", "value": "replace-with-your-secret" } ],
+      "environment": [
+        { "name": "JWT_SECRET", "value": "DbPgxPEztADVNGoeXqh2WnPT1iPrTVcGJHc6qJOqG95" },
+        { "name": "DB_URL", "value": "jdbc:postgresql://theatre-postgres.cigowvxwdqqp.us-east-1.rds.amazonaws.com:5432/identity_db" },
+        { "name": "DB_USERNAME", "value": "theatre" },
+        { "name": "DB_PASSWORD", "value": "Theatre#1234" }
+      ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
