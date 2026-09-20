@@ -28,6 +28,9 @@ public class Patron {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "contact_no")
+    private String contactNo;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 

@@ -31,6 +31,7 @@ public class PatronService {
         Patron patron = Patron.builder()
                 .name(request.getName().trim())
                 .email(email)
+                .contactNo(request.getContactNo() != null ? request.getContactNo().trim() : null)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isVerified(false)
                 .status(1)
@@ -44,6 +45,7 @@ public class PatronService {
                 .patronId(saved.getPatronId())
                 .name(saved.getName())
                 .email(saved.getEmail())
+                .contactNo(saved.getContactNo())
                 .build();
     }
 }

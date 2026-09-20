@@ -14,4 +14,5 @@ public class PatronRegisterResponse extends CommonResponse {
     private UUID patronId;
     private String name;
     private String email;
+    private String contactNo;
 }
