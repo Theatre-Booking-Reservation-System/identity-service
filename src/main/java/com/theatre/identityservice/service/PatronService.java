@@ -8,9 +8,11 @@ import com.theatre.identityservice.model.PatronRegisterResponse;
 import com.theatre.identityservice.model.PatronSummary;
 import com.theatre.identityservice.repository.PatronRepository;
 import com.theatre.identityservice.repository.model.Patron;
+import com.theatre.identityservice.repository.spec.PatronSpecifications;
 import com.theatre.identityservice.util.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,27 @@ public class PatronService {
     public PatronListResponse listAllPatrons() {
         List<PatronSummary> patrons = patronRepository
                 .findAll(Sort.by(Sort.Direction.DESC, "addedDate"))
+                .stream()
+                .map(this::toSummary)
+                .toList();
+
+        return PatronListResponse.builder()
+                .totalCount(patrons.size())
+                .patrons(patrons)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PatronListResponse searchPatrons(String name, String email, Boolean loyaltyHolder, Integer status) {
+        Specification<Patron> spec = Specification
+                .allOf(
+                        PatronSpecifications.nameContains(name),
+                        PatronSpecifications.emailContains(email),
+                        PatronSpecifications.loyaltyHolderIs(loyaltyHolder),
+                        PatronSpecifications.statusIs(status));
+
+        List<PatronSummary> patrons = patronRepository
+                .findAll(spec, Sort.by(Sort.Direction.DESC, "addedDate"))
                 .stream()
                 .map(this::toSummary)
                 .toList();

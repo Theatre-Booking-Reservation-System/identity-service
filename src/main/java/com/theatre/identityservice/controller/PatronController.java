@@ -65,4 +65,23 @@ public class PatronController {
     public ResponseEntity<PatronDetailResponse> getPatron(@PathVariable UUID patronId) {
         return ResponseEntity.ok(patronService.getPatron(patronId));
     }
+
+    @Operation(
+            summary = "Search patrons by filters",
+            description = "Returns patrons matching any combination of the optional filters "
+                    + "(name, email, loyaltyHolder, status). Name and email are matched "
+                    + "case-insensitively as a partial 'contains'. Omitting all filters returns "
+                    + "every patron. Intended for the admin portal; requires authentication.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matching patrons returned"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
+    @GetMapping("/search")
+    public ResponseEntity<PatronListResponse> searchPatrons(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean loyaltyHolder,
+            @RequestParam(required = false) Integer status) {
+        return ResponseEntity.ok(patronService.searchPatrons(name, email, loyaltyHolder, status));
+    }
 }
