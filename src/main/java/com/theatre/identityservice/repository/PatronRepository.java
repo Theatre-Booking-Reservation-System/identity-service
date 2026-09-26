@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface PatronRepository extends JpaRepository<Patron, UUID>, JpaSpecificationExecutor<Patron> {
 
     Optional<Patron> findByEmail(String email);
+
+    boolean existsByLoyaltyCardNo(String loyaltyCardNo);
 }

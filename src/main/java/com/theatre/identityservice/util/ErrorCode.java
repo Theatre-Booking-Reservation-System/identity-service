@@ -12,7 +12,8 @@ public enum ErrorCode {
     ACCOUNT_LOCKED("ATH_03", "Account is locked due to too many failed login attempts"),
     UNAUTHORIZED("ATH_04", "Authentication required"),
     ACCESS_DENIED("ATH_05", "You do not have permission to perform this action"),
-    PATRON_NOT_FOUND("PAT_01", "Patron not found");
+    PATRON_NOT_FOUND("PAT_01", "Patron not found"),
+    ALREADY_LOYALTY_MEMBER("PAT_02", "Patron is already enrolled in the loyalty programme");
 
     final String errorCode;
     final String errorDescription;

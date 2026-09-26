@@ -2,6 +2,7 @@ package com.theatre.identityservice.service;
 
 import com.theatre.identityservice.exception.ServiceException;
 import com.theatre.identityservice.model.CommonResponse;
+import com.theatre.identityservice.model.LoyaltyEnrollResponse;
 import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
@@ -124,6 +125,43 @@ public class PatronService {
                 .statusCode("SUCCESS")
                 .statusDescription("Patron account unlocked")
                 .build();
+    }
+
+    @Transactional
+    public LoyaltyEnrollResponse enrollLoyalty(UUID patronId, String performedBy) {
+        Patron patron = patronRepository.findById(patronId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.PATRON_NOT_FOUND));
+
+        if (patron.isLoyaltyHolder()) {
+            throw new ServiceException(ErrorCode.ALREADY_LOYALTY_MEMBER);
+        }
+
+        String loyaltyCardNo = generateLoyaltyCardNo();
+
+        patron.setLoyaltyHolder(true);
+        patron.setLoyaltyCardNo(loyaltyCardNo);
+        patron.setModifiedBy(performedBy);
+        patron.setModifiedDate(LocalDateTime.now());
+        patronRepository.save(patron);
+
+        return LoyaltyEnrollResponse.builder()
+                .statusCode("SUCCESS")
+                .statusDescription("Patron enrolled in the loyalty programme")
+                .patronId(patron.getPatronId())
+                .loyaltyCardNo(loyaltyCardNo)
+                .build();
+    }
+
+    /** Generates a unique loyalty card number of the form {@code LOY-XXXXXXXXXXXX}. */
+    private String generateLoyaltyCardNo() {
+        String candidate;
+        do {
+            candidate = "LOY-" + UUID.randomUUID().toString()
+                    .replace("-", "")
+                    .substring(0, 12)
+                    .toUpperCase();
+        } while (patronRepository.existsByLoyaltyCardNo(candidate));
+        return candidate;
     }
 
     private PatronSummary toSummary(Patron patron) {
