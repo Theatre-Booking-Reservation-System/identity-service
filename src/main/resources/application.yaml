@@ -2,34 +2,34 @@ spring:
   application:
     name: identity-service
 
-  # H2 in-memory DB for local development.
+  # PostgreSQL. Values are driven by env vars with local-dev defaults so the same
+  # build runs locally (docker-compose) and on AWS (RDS) by only changing env.
   datasource:
-    url: jdbc:h2:mem:identitydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/identity_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:theatre}
+    password: ${DB_PASSWORD:theatre}
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      # 'update' keeps the schema in sync with entities without dropping data.
+      ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: false
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  # Served under a context path so a single ALB can route by path prefix.
+  # Overridable via CONTEXT_PATH; empty ("") serves from root for local dev.
+  servlet:
+    context-path: ${CONTEXT_PATH:/identity-service}
 
 # JWT configuration
 jwt:
-  secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForTheatreIdentityService}
+  secret: DbPgxPEztADVNGoeXqh2WnPT1iPrTVcGJHc6qJOqG95
   expiration-ms: 3600000 # 1 hour
 
 # Auth / account lockout configuration
@@ -42,3 +42,11 @@ management:
     web:
       exposure:
         include: health,info
+
+# OpenAPI / Swagger UI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
