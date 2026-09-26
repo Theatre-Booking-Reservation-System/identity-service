@@ -32,6 +32,8 @@ public class PatronService {
                 .name(request.getName().trim())
                 .email(email)
                 .contactNo(request.getContactNo() != null ? request.getContactNo().trim() : null)
+                .dateOfBirth(request.getDateOfBirth())
+                .nicPassportNo(request.getNicPassportNo() != null ? request.getNicPassportNo().trim() : null)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isVerified(false)
                 .status(1)
@@ -46,6 +48,8 @@ public class PatronService {
                 .name(saved.getName())
                 .email(saved.getEmail())
                 .contactNo(saved.getContactNo())
+                .dateOfBirth(saved.getDateOfBirth())
+                .nicPassportNo(saved.getNicPassportNo())
                 .build();
     }
 }

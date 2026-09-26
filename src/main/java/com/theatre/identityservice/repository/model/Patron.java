@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -30,6 +31,12 @@ public class Patron {
 
     @Column(name = "contact_no")
     private String contactNo;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "nic_passport_no")
+    private String nicPassportNo;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
