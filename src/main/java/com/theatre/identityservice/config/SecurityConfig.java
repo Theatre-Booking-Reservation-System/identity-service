@@ -16,9 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -29,6 +27,7 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthErrorHandlers restAuthErrorHandlers;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,19 +47,16 @@ public class SecurityConfig {
                         // checks are enforced by @PreAuthorize (method security).
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
+                .exceptionHandling(ex -> ex
+                        // 401 unauthenticated / 403 forbidden, both emitted as the
+                        // common {statusCode, statusDescription} envelope.
+                        .authenticationEntryPoint(restAuthErrorHandlers.authenticationEntryPoint())
+                        .accessDeniedHandler(restAuthErrorHandlers.accessDeniedHandler()))
                 // Allow H2 console frames
                 .headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public AuthenticationEntryPoint unauthorizedEntryPoint() {
-        // Return 401 (not the default 403) when an unauthenticated caller hits a
-        // protected endpoint.
-        return new HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED);
     }
 
     @Bean
