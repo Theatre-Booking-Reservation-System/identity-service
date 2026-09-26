@@ -1,6 +1,7 @@
 package com.theatre.identityservice.service;
 
 import com.theatre.identityservice.exception.ServiceException;
+import com.theatre.identityservice.model.CommonResponse;
 import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
@@ -103,6 +104,23 @@ public class PatronService {
 
         return PatronDetailResponse.builder()
                 .patron(toSummary(patron))
+                .build();
+    }
+
+    @Transactional
+    public CommonResponse unlockPatron(UUID patronId, String performedBy) {
+        Patron patron = patronRepository.findById(patronId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.PATRON_NOT_FOUND));
+
+        patron.setLockedUntil(null);
+        patron.setFailedLoginCount((short) 0);
+        patron.setModifiedBy(performedBy);
+        patron.setModifiedDate(LocalDateTime.now());
+        patronRepository.save(patron);
+
+        return CommonResponse.builder()
+                .statusCode("SUCCESS")
+                .statusDescription("Patron account unlocked")
                 .build();
     }
 

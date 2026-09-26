@@ -1,5 +1,6 @@
 package com.theatre.identityservice.controller;
 
+import com.theatre.identityservice.model.CommonResponse;
 import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -90,5 +92,24 @@ public class PatronController {
             @RequestParam(required = false) Boolean loyaltyHolder,
             @RequestParam(required = false) Integer status) {
         return ResponseEntity.ok(patronService.searchPatrons(name, email, loyaltyHolder, status));
+    }
+
+    @Operation(
+            summary = "Unlock a locked patron account",
+            description = "Clears any active lock and resets the failed-login counter for the "
+                    + "given patron, letting them log in again immediately. Idempotent. "
+                    + "Restricted to admins.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Patron account unlocked"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Caller is not an admin"),
+            @ApiResponse(responseCode = "404", description = "No patron exists for the given id")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{patronId}/unlock")
+    public ResponseEntity<CommonResponse> unlockPatron(@PathVariable UUID patronId,
+                                                       Authentication authentication) {
+        String performedBy = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(patronService.unlockPatron(patronId, performedBy));
     }
 }
