@@ -1,5 +1,6 @@
 package com.theatre.identityservice.controller;
 
+import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
 import com.theatre.identityservice.model.PatronRegisterResponse;
 import com.theatre.identityservice.service.PatronService;
@@ -33,5 +34,18 @@ public class PatronController {
     @PostMapping("/register")
     public ResponseEntity<PatronRegisterResponse> register(@Valid @RequestBody PatronRegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(patronService.register(request));
+    }
+
+    @Operation(
+            summary = "List all registered patrons",
+            description = "Returns every patron account as a read-only summary, most recently "
+                    + "registered first. Intended for the admin portal; requires authentication.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Patron list returned"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
+    @GetMapping("/list")
+    public ResponseEntity<PatronListResponse> listPatrons() {
+        return ResponseEntity.ok(patronService.listAllPatrons());
     }
 }
