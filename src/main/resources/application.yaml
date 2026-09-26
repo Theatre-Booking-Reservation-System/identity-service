@@ -21,7 +21,11 @@ spring:
         format_sql: true
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  # Served under a context path so a single ALB can route by path prefix.
+  # Overridable via CONTEXT_PATH; empty ("") serves from root for local dev.
+  servlet:
+    context-path: ${CONTEXT_PATH:/identity-service}
 
 # JWT configuration
 jwt:
