@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -45,8 +46,10 @@ public class PatronController {
                     + "registered first. Intended for the admin portal; requires authentication.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Patron list returned"),
-            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Caller is not an admin")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<PatronListResponse> listPatrons() {
         return ResponseEntity.ok(patronService.listAllPatrons());
@@ -59,8 +62,10 @@ public class PatronController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Patron found"),
             @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Caller is neither an admin nor a patron"),
             @ApiResponse(responseCode = "404", description = "No patron exists for the given id")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'PATRON')")
     @GetMapping("/{patronId}")
     public ResponseEntity<PatronDetailResponse> getPatron(@PathVariable UUID patronId) {
         return ResponseEntity.ok(patronService.getPatron(patronId));
@@ -74,8 +79,10 @@ public class PatronController {
                     + "every patron. Intended for the admin portal; requires authentication.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Matching patrons returned"),
-            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Caller is not an admin")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<PatronListResponse> searchPatrons(
             @RequestParam(required = false) String name,
