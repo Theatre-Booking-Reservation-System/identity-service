@@ -11,7 +11,6 @@ import com.theatre.identityservice.config.JwtConfig;
 import com.theatre.identityservice.util.ErrorCode;
 import com.theatre.identityservice.util.UserRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,12 +32,7 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
     private final TokenService tokenService;
     private final JwtConfig jwtConfig;
-
-    @Value("${auth.max-failed-attempts:5}")
-    private short maxFailedAttempts;
-
-    @Value("${auth.lockout-duration-minutes:15}")
-    private long lockoutDurationMinutes;
+    private final PatronLoginAttemptService patronLoginAttemptService;
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
@@ -61,18 +55,20 @@ public class AuthService {
     private LoginResponse authenticatePatron(Patron patron, String rawPassword) {
         String prefixedUsername = "PATRON:" + patron.getEmail();
 
+        if (patron.getLockedUntil() != null && patron.getLockedUntil().isAfter(LocalDateTime.now())) {
+            throw new ServiceException(ErrorCode.ACCOUNT_LOCKED);
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(prefixedUsername, rawPassword));
         } catch (BadCredentialsException ex) {
-            recordFailedAttempt(patron);
+            patronLoginAttemptService.recordFailedAttempt(patron.getPatronId());
             throw ex;
         }
 
-        // Successful login — reset failure counter
-        patron.setFailedLoginCount((short) 0);
-        patron.setLockedUntil(null);
-        patronRepository.save(patron);
+        // Successful login — reset the failure counter (separate transaction).
+        patronLoginAttemptService.resetFailedAttempts(patron.getPatronId());
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(prefixedUsername);
         String role = UserRole.PATRON.name();
@@ -86,17 +82,6 @@ public class AuthService {
                 .email(patron.getEmail())
                 .role(role)
                 .build();
-    }
-
-    private void recordFailedAttempt(Patron patron) {
-        short attempts = (short) (patron.getFailedLoginCount() + 1);
-        patron.setFailedLoginCount(attempts);
-
-        if (attempts >= maxFailedAttempts) {
-            patron.setLockedUntil(LocalDateTime.now().plusMinutes(lockoutDurationMinutes));
-        }
-
-        patronRepository.save(patron);
     }
 
     private LoginResponse authenticateAdmin(AdminUser admin, String rawPassword) {

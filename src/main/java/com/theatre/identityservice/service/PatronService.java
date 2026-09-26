@@ -11,6 +11,7 @@ import com.theatre.identityservice.repository.PatronRepository;
 import com.theatre.identityservice.repository.model.Patron;
 import com.theatre.identityservice.repository.spec.PatronSpecifications;
 import com.theatre.identityservice.util.ErrorCode;
+import com.theatre.identityservice.util.PatronStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -45,7 +46,7 @@ public class PatronService {
                 .nicPassportNo(request.getNicPassportNo() != null ? request.getNicPassportNo().trim() : null)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isVerified(false)
-                .status(1)
+                .status(PatronStatus.ACTIVE.getCode())
                 .addedBy(email)
                 .addedDate(LocalDateTime.now())
                 .build();
@@ -112,6 +113,9 @@ public class PatronService {
         Patron patron = patronRepository.findById(patronId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.PATRON_NOT_FOUND));
 
+        // Restore the account to a usable state: clear the lock, reset the
+        // failure counter and set status back to ACTIVE.
+        patron.setStatus(PatronStatus.ACTIVE.getCode());
         patron.setLockedUntil(null);
         patron.setFailedLoginCount((short) 0);
         patron.setModifiedBy(performedBy);

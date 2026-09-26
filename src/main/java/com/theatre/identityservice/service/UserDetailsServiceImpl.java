@@ -4,6 +4,7 @@ import com.theatre.identityservice.repository.model.AdminUser;
 import com.theatre.identityservice.repository.model.Patron;
 import com.theatre.identityservice.repository.AdminUserRepository;
 import com.theatre.identityservice.repository.PatronRepository;
+import com.theatre.identityservice.util.PatronStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -57,8 +58,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     private void enforcePatronLockout(Patron patron) {
-        if (patron.getLockedUntil() != null && patron.getLockedUntil().isAfter(LocalDateTime.now())) {
-            throw new LockedException("Account is locked until " + patron.getLockedUntil());
+        LocalDateTime lockedUntil = patron.getLockedUntil();
+
+        if (lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now())) {
+            throw new LockedException("Account is locked until " + lockedUntil);
+        }
+
+        // Lock window has elapsed: restore the account to ACTIVE so the stored
+        // status stays consistent with the (now expired) lock.
+        if (lockedUntil != null || (patron.getStatus() != null
+                && patron.getStatus() == PatronStatus.LOCKED.getCode())) {
+            patron.setStatus(PatronStatus.ACTIVE.getCode());
+            patron.setLockedUntil(null);
+            patron.setFailedLoginCount((short) 0);
+            patronRepository.save(patron);
         }
     }
 
