@@ -34,7 +34,7 @@ jwt:
 
 # Auth / account lockout configuration
 auth:
-  max-failed-attempts: 5
+  max-failed-attempts: 3
   lockout-duration-minutes: 15
 
 management:
