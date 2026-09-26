@@ -45,7 +45,7 @@ public class PatronService {
                 .dateOfBirth(request.getDateOfBirth())
                 .nicPassportNo(request.getNicPassportNo() != null ? request.getNicPassportNo().trim() : null)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .isVerified(false)
+                .isVerified(true)
                 .status(PatronStatus.ACTIVE.getCode())
                 .addedBy(email)
                 .addedDate(LocalDateTime.now())
@@ -54,12 +54,10 @@ public class PatronService {
         Patron saved = patronRepository.save(patron);
 
         return PatronRegisterResponse.builder()
+                .statusCode("SUCCESS")
+                .statusDescription("Patron registered successfully")
                 .patronId(saved.getPatronId())
-                .name(saved.getName())
                 .email(saved.getEmail())
-                .contactNo(saved.getContactNo())
-                .dateOfBirth(saved.getDateOfBirth())
-                .nicPassportNo(saved.getNicPassportNo())
                 .build();
     }
 
