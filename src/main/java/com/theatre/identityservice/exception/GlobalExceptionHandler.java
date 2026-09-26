@@ -11,11 +11,25 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<CommonResponse> handleAuthException(ServiceException ex) {
+    public ResponseEntity<CommonResponse> handleServiceException(ServiceException ex) {
+        String errorCode = ex.getErrorCode().orElse(ErrorCode.DEFAULT.getErrorCode());
         CommonResponse commonResponse = CommonResponse.builder()
-                .statusCode(ex.getErrorCode().orElse(ErrorCode.DEFAULT.getErrorCode()))
+                .statusCode(errorCode)
                 .statusDescription(ex.getErrorDescription().orElse(ErrorCode.DEFAULT.getErrorDescription()))
                 .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(commonResponse);
+        return ResponseEntity.status(httpStatusFor(errorCode)).body(commonResponse);
+    }
+
+    private HttpStatus httpStatusFor(String errorCode) {
+        if (ErrorCode.PATRON_NOT_FOUND.getErrorCode().equals(errorCode)) {
+            return HttpStatus.NOT_FOUND;
+        }
+        if (ErrorCode.EMAIL_ALREADY_REGISTERED.getErrorCode().equals(errorCode)) {
+            return HttpStatus.CONFLICT;
+        }
+        if (ErrorCode.INVALID_USER_ID_OR_PASSWORD.getErrorCode().equals(errorCode)) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }

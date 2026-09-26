@@ -1,5 +1,6 @@
 package com.theatre.identityservice.controller;
 
+import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
 import com.theatre.identityservice.model.PatronRegisterResponse;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/patron")
@@ -47,5 +50,19 @@ public class PatronController {
     @GetMapping("/list")
     public ResponseEntity<PatronListResponse> listPatrons() {
         return ResponseEntity.ok(patronService.listAllPatrons());
+    }
+
+    @Operation(
+            summary = "Get a single patron's details",
+            description = "Returns the details of one patron by id. Intended for the admin "
+                    + "portal; requires authentication.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Patron found"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "404", description = "No patron exists for the given id")
+    })
+    @GetMapping("/{patronId}")
+    public ResponseEntity<PatronDetailResponse> getPatron(@PathVariable UUID patronId) {
+        return ResponseEntity.ok(patronService.getPatron(patronId));
     }
 }

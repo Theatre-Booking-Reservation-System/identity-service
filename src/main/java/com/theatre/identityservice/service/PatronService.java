@@ -1,6 +1,7 @@
 package com.theatre.identityservice.service;
 
 import com.theatre.identityservice.exception.ServiceException;
+import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
 import com.theatre.identityservice.model.PatronRegisterResponse;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +70,16 @@ public class PatronService {
         return PatronListResponse.builder()
                 .totalCount(patrons.size())
                 .patrons(patrons)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PatronDetailResponse getPatron(UUID patronId) {
+        Patron patron = patronRepository.findById(patronId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.PATRON_NOT_FOUND));
+
+        return PatronDetailResponse.builder()
+                .patron(toSummary(patron))
                 .build();
     }
 
