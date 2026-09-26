@@ -24,9 +24,17 @@ public class TokenService {
 
     public String generateToken(UserDetails userDetails, String role, String email) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
+        claims.put("role", toAuthority(role));
         claims.put("email", email);
         return buildToken(claims, userDetails.getUsername());
+    }
+
+    /** Normalises a role name to the ROLE_-prefixed authority form. */
+    private static String toAuthority(String role) {
+        if (role == null || role.isBlank()) {
+            return role;
+        }
+        return role.startsWith("ROLE_") ? role : "ROLE_" + role;
     }
 
     private String buildToken(Map<String, Object> extraClaims, String subject) {

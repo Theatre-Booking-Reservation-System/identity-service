@@ -13,3 +13,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+
+# JWT config for tests (mirrors the shape of the main profile).
+jwt:
+  secret: TestSecretKeyForIdentityServiceUnitAndIntegrationTests123456
+  expiration-ms: 3600000
