@@ -13,8 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.chrono.ChronoLocalDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -58,8 +57,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     private void enforcePatronLockout(Patron patron) {
-        Instant now = Instant.now();
-        if (patron.getLockedUntil() != null && patron.getLockedUntil().isAfter(ChronoLocalDateTime.from(now))) {
+        if (patron.getLockedUntil() != null && patron.getLockedUntil().isAfter(LocalDateTime.now())) {
             throw new LockedException("Account is locked until " + patron.getLockedUntil());
         }
     }

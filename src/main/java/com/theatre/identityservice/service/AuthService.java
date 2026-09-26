@@ -20,7 +20,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -94,7 +93,7 @@ public class AuthService {
         patron.setFailedLoginCount(attempts);
 
         if (attempts >= maxFailedAttempts) {
-            patron.setLockedUntil(LocalDateTime.from(Instant.now().plusSeconds(lockoutDurationMinutes * 60)));
+            patron.setLockedUntil(LocalDateTime.now().plusMinutes(lockoutDurationMinutes));
         }
 
         patronRepository.save(patron);
