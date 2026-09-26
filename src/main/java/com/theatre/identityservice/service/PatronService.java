@@ -1,17 +1,25 @@
 package com.theatre.identityservice.service;
 
 import com.theatre.identityservice.exception.ServiceException;
+import com.theatre.identityservice.model.PatronDetailResponse;
+import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
 import com.theatre.identityservice.model.PatronRegisterResponse;
+import com.theatre.identityservice.model.PatronSummary;
 import com.theatre.identityservice.repository.PatronRepository;
 import com.theatre.identityservice.repository.model.Patron;
+import com.theatre.identityservice.repository.spec.PatronSpecifications;
 import com.theatre.identityservice.util.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +58,67 @@ public class PatronService {
                 .contactNo(saved.getContactNo())
                 .dateOfBirth(saved.getDateOfBirth())
                 .nicPassportNo(saved.getNicPassportNo())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PatronListResponse listAllPatrons() {
+        List<PatronSummary> patrons = patronRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "addedDate"))
+                .stream()
+                .map(this::toSummary)
+                .toList();
+
+        return PatronListResponse.builder()
+                .totalCount(patrons.size())
+                .patrons(patrons)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PatronListResponse searchPatrons(String name, String email, Boolean loyaltyHolder, Integer status) {
+        Specification<Patron> spec = Specification
+                .allOf(
+                        PatronSpecifications.nameContains(name),
+                        PatronSpecifications.emailContains(email),
+                        PatronSpecifications.loyaltyHolderIs(loyaltyHolder),
+                        PatronSpecifications.statusIs(status));
+
+        List<PatronSummary> patrons = patronRepository
+                .findAll(spec, Sort.by(Sort.Direction.DESC, "addedDate"))
+                .stream()
+                .map(this::toSummary)
+                .toList();
+
+        return PatronListResponse.builder()
+                .totalCount(patrons.size())
+                .patrons(patrons)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PatronDetailResponse getPatron(UUID patronId) {
+        Patron patron = patronRepository.findById(patronId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.PATRON_NOT_FOUND));
+
+        return PatronDetailResponse.builder()
+                .patron(toSummary(patron))
+                .build();
+    }
+
+    private PatronSummary toSummary(Patron patron) {
+        return PatronSummary.builder()
+                .patronId(patron.getPatronId())
+                .name(patron.getName())
+                .email(patron.getEmail())
+                .contactNo(patron.getContactNo())
+                .dateOfBirth(patron.getDateOfBirth())
+                .nicPassportNo(patron.getNicPassportNo())
+                .verified(patron.isVerified())
+                .loyaltyCardNo(patron.getLoyaltyCardNo())
+                .loyaltyHolder(patron.isLoyaltyHolder())
+                .status(patron.getStatus())
+                .addedDate(patron.getAddedDate())
                 .build();
     }
 }
