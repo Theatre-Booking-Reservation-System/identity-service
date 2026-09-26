@@ -1,6 +1,7 @@
 package com.theatre.identityservice.controller;
 
 import com.theatre.identityservice.model.CommonResponse;
+import com.theatre.identityservice.model.LoyaltyEnrollResponse;
 import com.theatre.identityservice.model.PatronDetailResponse;
 import com.theatre.identityservice.model.PatronListResponse;
 import com.theatre.identityservice.model.PatronRegisterRequest;
@@ -111,5 +112,25 @@ public class PatronController {
                                                        Authentication authentication) {
         String performedBy = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(patronService.unlockPatron(patronId, performedBy));
+    }
+
+    @Operation(
+            summary = "Enrol a patron in the loyalty programme",
+            description = "Generates a loyalty card number and flags the patron as a loyalty "
+                    + "holder. Fails if the patron is already enrolled. Available to admins and "
+                    + "to the patron themselves.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Patron enrolled; loyalty id returned"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Caller is neither an admin nor a patron"),
+            @ApiResponse(responseCode = "404", description = "No patron exists for the given id"),
+            @ApiResponse(responseCode = "409", description = "Patron is already a loyalty member")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN', 'PATRON')")
+    @PostMapping("/{patronId}/loyalty")
+    public ResponseEntity<LoyaltyEnrollResponse> enrollLoyalty(@PathVariable UUID patronId,
+                                                               Authentication authentication) {
+        String performedBy = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(patronService.enrollLoyalty(patronId, performedBy));
     }
 }

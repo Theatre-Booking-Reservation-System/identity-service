@@ -86,7 +86,8 @@ public class GlobalExceptionHandler {
         if (ErrorCode.PATRON_NOT_FOUND.getErrorCode().equals(errorCode)) {
             return HttpStatus.NOT_FOUND;
         }
-        if (ErrorCode.EMAIL_ALREADY_REGISTERED.getErrorCode().equals(errorCode)) {
+        if (ErrorCode.EMAIL_ALREADY_REGISTERED.getErrorCode().equals(errorCode)
+                || ErrorCode.ALREADY_LOYALTY_MEMBER.getErrorCode().equals(errorCode)) {
             return HttpStatus.CONFLICT;
         }
         if (ErrorCode.INVALID_USER_ID_OR_PASSWORD.getErrorCode().equals(errorCode)) {
